@@ -1,0 +1,10 @@
+{
+  "name": "Tic Tac Toe Game",
+  "version": "1.0",
+  "description": "Free Code Camp Challenge: Tic Tac Toe game",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-import": "^2.7.0"
+  }
+}
