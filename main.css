@@ -9,15 +9,19 @@
   height : 246px;
   float : left;
   z-index: 10;
-  background-color: darkgray;
+  background-color: #14bdac; 
+}
+
+#board {
+  background-color: #14bdac; 
 }
 
 .winner {
-  background-color: green;
+  background-color: #14bdac; 
 }
 
 .draw {
-    background-color: blue;
+  background-color: #14bdac; 
 }
 
 .col {
@@ -30,15 +34,43 @@
 }
 
 .block {
-  border: solid 1px black;
   height: 80px;
   width: 80px;
 }
 
-.red {
-  background-color: red;
+.border-left{
+  border-left: solid 2px rgba(0,0,0,0.5);
 }
 
-.blue {
-  background-color: blue;
+.border-right{
+  border-right: solid 2px rgba(0,0,0,0.5);
+}
+
+.border-top{
+  border-top: solid 2px rgba(0,0,0,0.5);
+}
+
+.border-bottom{
+  border-bottom: solid 2px rgba(0,0,0,0.5);
+}
+
+.buttonXO {
+  width: 30%;
+  background-color: transparent;
+  border: none;
+}
+
+.item {
+  stroke-dashoffset: 0;
+  fill: none;
+  stroke-width: 16px;
+}
+.O {
+  stroke: rgb(242, 235, 211);
+  stroke-dasharray: 301.635;
+}
+
+.X {
+  stroke: rgb(84, 84, 84);
+  stroke-dasharray: 135.764;
 }

@@ -12,22 +12,24 @@ const winCombinations = [
   [1, 5, 9],
   [3, 5, 7]];
 
-const player1 = { number: 1, played: [], possibleWins: winCombinations, color: '', wins: 0 };
-const player2 = { number: 2, played: [], possibleWins: winCombinations, color: '', wins: 0 };
+const player1 = { number: 1, played: [], possibleWins: winCombinations, XO: '', wins: 0 };
+const player2 = { number: 2, played: [], possibleWins: winCombinations, XO: '', wins: 0 };
 
+const O = '<svg class="item O" viewBox="0 0 128 128"><path d="M64,16A48,48 0 1,0 64,112A48,48 0 1,0 64,16"></path></svg>';
+const X = '<svg class="item X" viewBox="0 0 128 128"><path d="M16,16L112,112"></path><path d="M112,16L16,112"></path></svg>';
 let playerStartingGame = 1;
 
-const availableBlocks = document.querySelectorAll('div.available');
+const availableBlocks = document.querySelectorAll('[status="available"]');
 
-function chooseColor(selectedColor) {
-  if (selectedColor === 'blue') {
-    player1.color = 'blue';
-    player2.color = 'red';
-  } else if (selectedColor === 'red') {
-    player1.color = 'red';
-    player2.color = 'blue';
+function chooseOX(selected) {
+  if (selected === 'O') {
+    player1.XO = O;
+    player2.XO = X;
+  } else if (selected === 'X') {
+    player1.XO = X;
+    player2.XO = O;
   } else {
-    console.error('no color');
+    console.error('nothing selected');
   }
 
   document.getElementById('chooseColor').style.display = 'none';
@@ -72,7 +74,8 @@ function winCheck(currentPlayer) {
 
 function updateVisual(block, currentPlayer, nextTurn) {
   const currBlock = block;
-  currBlock.className = `block , ${currentPlayer.color}`;
+  currBlock.setAttribute('status', 'block');
+  currBlock.innerHTML = `${currentPlayer.XO}`;
   document.getElementById('turn-value').innerHTML = `Player ${nextTurn}`;
 }
 
@@ -84,10 +87,11 @@ function updateData(blockId, currentPlayer, nextPlayer) {
 }
 
 function cleanCurrGame() {
-  const playedBlocks = document.querySelectorAll('div.block');
+  const playedBlocks = document.querySelectorAll('[status="block"]');
   playedBlocks.forEach((block) => {
     const currBlock = block;
-    currBlock.className = 'block available';
+    currBlock.innerHTML = '';
+    currBlock.setAttribute('status', 'available');
   });
   player1.possibleWins = winCombinations;
   player2.possibleWins = winCombinations;
@@ -201,13 +205,13 @@ function play(turn) {
   });
 }
 
-document.getElementById('blue').addEventListener('click', () => {
-  chooseColor('blue');
+document.getElementById('O').addEventListener('click', () => {
+  chooseOX('O');
   start();
 });
 
-document.getElementById('red').addEventListener('click', () => {
-  chooseColor('red');
+document.getElementById('X').addEventListener('click', () => {
+  chooseOX('X');
   start();
 });
 

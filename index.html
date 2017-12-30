@@ -9,7 +9,6 @@
 </head>
 <body>
     
-    
 <div id="wrapper">
   <div id="menu">
     <div>
@@ -29,34 +28,34 @@
     </div>
   </div>
   <div id="chooseColor" class ="overlay" style="display:block">
-    <p>Choose your color:</p>
-    <button id='blue' class='blue'>Blue</button>
-    <button id='red' class='red'>Red</button>
+    <p>Would you like to be O or X:</p>
+    <button id='O' class='buttonXO'><svg class="item O" viewBox="0 0 128 128" style="visibility: visible;"><path d="M64,16A48,48 0 1,0 64,112A48,48 0 1,0 64,16" style="stroke: rgb(242, 235, 211); stroke-dasharray: 301.635; stroke-dashoffset: 0;"></path></svg></button>
+    <button id='X' class='buttonXO'><svg class="item X" viewBox="0 0 128 128" style="visibility: visible;"><path d="M16,16L112,112" style="stroke: rgb(84, 84, 84); stroke-dasharray: 135.764; stroke-dashoffset: 0;"></path><path d="M112,16L16,112" style="stroke: rgb(84, 84, 84); stroke-dasharray: 135.764; stroke-dashoffset: 0;"></path></svg></button>
   </div>
   <div id="end" class="overlay" style="display:none">toto</div>
   <div id="board" style="display:none">
     <div class="row">
-      <div id="1" class="block available">
+      <div id="1" class="block border-right border-bottom" status="available">
       </div>
-      <div id="2" class="block available">
+      <div id="2" class="block border-left border-right border-bottom" status="available">
       </div>
-      <div id="3" class="block available">
-      </div>
-    </div>
-    <div class="row">
-      <div id="4" class="block available">
-      </div>
-      <div id="5" class="block available">
-      </div>
-      <div id="6" class="block available">
+      <div id="3" class="block border-left border-bottom" status="available">
       </div>
     </div>
     <div class="row">
-      <div id="7" class="block available">
+      <div id="4" class="block border-right border-top border-bottom" status="available">
       </div>
-      <div id="8" class="block available">
+      <div id="5" class="block border-left border-top border-right border-bottom" status="available">
       </div>
-      <div id="9" class="block available">
+      <div id="6" class="block border-left border-top border-bottom" status="available">
+      </div>
+    </div>
+    <div class="row">
+      <div id="7" class="block border-right border-top" status="available">
+      </div>
+      <div id="8" class="block border-left border-right border-top" status="available">
+      </div>
+      <div id="9" class="block border-left border-top" status="available">
       </div>
     </div>
   </div>
