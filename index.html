@@ -13,7 +13,7 @@
 <div id="wrapper">
   <div id="menu">
     <div>
-      <button id="reset">Start</button> 
+      <button id="reset" style="visibility:hidden">Reset</button> 
       <div id="turn-wrapper" style="display:none">
         <div class="col">Turn:</div>
         <div id="turn-value" class="col" >Player 1</div>
@@ -28,8 +28,13 @@
         <div class="col"> Player 2</div>
     </div>
   </div>
-  <div id="end" style="display:none">toto</div>
-  <div id="board">
+  <div id="chooseColor" class ="overlay" style="display:block">
+    <p>Choose your color:</p>
+    <button id='blue' class='blue'>Blue</button>
+    <button id='red' class='red'>Red</button>
+  </div>
+  <div id="end" class="overlay" style="display:none">toto</div>
+  <div id="board" style="display:none">
     <div class="row">
       <div id="1" class="block available">
       </div>

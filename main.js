@@ -12,12 +12,28 @@ const winCombinations = [
   [1, 5, 9],
   [3, 5, 7]];
 
-const player1 = { number: 1, played: [], possibleWins: winCombinations, color: 'player-1', wins: 0 };
-const player2 = { number: 2, played: [], possibleWins: winCombinations, color: 'player-2', wins: 0 };
+const player1 = { number: 1, played: [], possibleWins: winCombinations, color: '', wins: 0 };
+const player2 = { number: 2, played: [], possibleWins: winCombinations, color: '', wins: 0 };
 
 let playerStartingGame = 1;
 
 const availableBlocks = document.querySelectorAll('div.available');
+
+function chooseColor(selectedColor) {
+  if (selectedColor === 'blue') {
+    player1.color = 'blue';
+    player2.color = 'red';
+  } else if (selectedColor === 'red') {
+    player1.color = 'red';
+    player2.color = 'blue';
+  } else {
+    console.error('no color');
+  }
+
+  document.getElementById('chooseColor').style.display = 'none';
+  document.getElementById('board').style.display = 'block';
+  document.getElementById('reset').style.visibility = 'visible';
+}
 
 function updateOtherPlayerPossibleWins(OtherPlayer, lastMove) {
   const currMove = Number(lastMove);
@@ -93,6 +109,12 @@ function reset() {
   cleanCurrSession();
   document.getElementById('reset').innerHTML = 'Reset';
   document.getElementById('turn-wrapper').style.display = 'block';
+  document.getElementById('chooseColor').style.display = 'block';
+  document.getElementById('board').style.display = 'none';
+  start();
+}
+
+function start() {
   playerStartingGame = Math.floor((Math.random() * 2) + 1);
   if (playerStartingGame === 1) {
     document.getElementById('turn-value').innerHTML = 'Player 1';
@@ -178,6 +200,16 @@ function play(turn) {
     );
   });
 }
+
+document.getElementById('blue').addEventListener('click', () => {
+  chooseColor('blue');
+  start();
+});
+
+document.getElementById('red').addEventListener('click', () => {
+  chooseColor('red');
+  start();
+});
 
 document.getElementById('reset').addEventListener('click', () => {
   reset();
