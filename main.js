@@ -1,7 +1,9 @@
 /* eslint-env browser */
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 /* eslint no-use-before-define: ["error", { "functions": false }] */
+let gameType = '';
 
+let remainingMoves = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const winCombinations = [
   [1, 2, 3],
   [4, 5, 6],
@@ -17,9 +19,16 @@ const player2 = { number: 2, played: [], possibleWins: winCombinations, XO: '', 
 
 const O = '<svg class="item O" viewBox="0 0 128 128"><path d="M64,16A48,48 0 1,0 64,112A48,48 0 1,0 64,16"></path></svg>';
 const X = '<svg class="item X" viewBox="0 0 128 128"><path d="M16,16L112,112"></path><path d="M112,16L16,112"></path></svg>';
-let playerStartingGame = 1;
 
 const availableBlocks = document.querySelectorAll('[status="available"]');
+
+let playerStartingGame;
+let currTurn;
+let nextTurn;
+let currentPlayer = {};
+let nextPlayer = {};
+let blockPlayed;
+let status = 'No winner yet';
 
 function chooseOX(selected) {
   if (selected === 'O') {
@@ -37,6 +46,22 @@ function chooseOX(selected) {
   document.getElementById('reset').style.visibility = 'visible';
 }
 
+function gameSetup() {
+  document.getElementById('chooseGame').style.display = 'none';
+  document.getElementById('chooseColor').style.display = 'block';
+}
+
+function updateRemainingMoves(currentBlockId) {
+  const newRemainingMoves = [];
+  let i;
+  for (i = 0; i < remainingMoves.length; i += 1) {
+    if (!remainingMoves[i] === currentBlockId) {
+      newRemainingMoves.push(currentBlockId);
+    }
+  }
+  return newRemainingMoves;
+}
+
 function updateOtherPlayerPossibleWins(OtherPlayer, lastMove) {
   const currMove = Number(lastMove);
   const newPossibleWins = [];
@@ -49,7 +74,7 @@ function updateOtherPlayerPossibleWins(OtherPlayer, lastMove) {
   return newPossibleWins;
 }
 
-function winCheck(currentPlayer) {
+function winCheck() {
   const joueur = currentPlayer;
   let k;
   let winningCombination = [];
@@ -72,18 +97,62 @@ function winCheck(currentPlayer) {
   return 'No winner yet';
 }
 
-function updateVisual(block, currentPlayer, nextTurn) {
-  const currBlock = block;
-  currBlock.setAttribute('status', 'block');
-  currBlock.innerHTML = `${currentPlayer.XO}`;
+function updateVisual(blockId) {
+  const currBlock = blockId;
+  document.getElementById(currBlock).setAttribute('status', 'block');
+  document.getElementById(currBlock).innerHTML = `${currentPlayer.XO}`;
   document.getElementById('turn-value').innerHTML = `Player ${nextTurn}`;
 }
 
-function updateData(blockId, currentPlayer, nextPlayer) {
+function updateData(blockId) {
   const nextPlayerz = nextPlayer;
   const currentPlayerz = currentPlayer;
   currentPlayerz.played.push(blockId);
   nextPlayerz.possibleWins = updateOtherPlayerPossibleWins(nextPlayerz, blockId);
+  remainingMoves = updateRemainingMoves(blockId);
+  console.log(`player1 || played: ${player1.played} || possibleWins ${player1.possibleWins.length}`);
+  console.log(`player2 || played: ${player2.played} || possibleWins ${player2.possibleWins.length}`);
+}
+
+function computerPlaying() {
+  let choice;
+  let k;
+  // first check if player 1 is about to win
+  for (k = 0; k < player1.possibleWins.length; k += 1) {
+    const player1OrderedwinningCombination = [
+      {
+        combination: [1, 2, 3],
+        has: [1, 2],
+        needs: [3],
+      },
+    ];
+    let l;
+    for (l = 0; l < player1.played.length; l += 1) {
+      const player1PossibleWin = player1.possibleWins[k];
+      const playerCurrMovePos = player1PossibleWin.indexOf(playerCurrMove);
+      if (playerCurrMovePos !== -1) {
+        player1OrderedwinningCombination.push(playerCurrMove);
+      }
+
+      if (winningCombination.length === 3) {
+        return 'winner';
+      }
+    }
+  }
+
+
+  // rank my possible wins based on number of
+  //
+  // for each possible combination, check each value
+    // if value hasn't been played, play it.
+    // else go to next value
+  // when ending, go to next
+  updateVisual(choice);
+  updateData(choice);
+  if (currentPlayer.played.length >= 3) {
+    sessionStatus();
+  }
+  updateTurn();
 }
 
 function cleanCurrGame() {
@@ -111,21 +180,33 @@ function cleanCurrSession() {
 function reset() {
   cleanCurrGame();
   cleanCurrSession();
-  document.getElementById('reset').innerHTML = 'Reset';
-  document.getElementById('turn-wrapper').style.display = 'block';
-  document.getElementById('chooseColor').style.display = 'block';
+  gameType = '';
+  document.getElementById('reset').style.visibility = 'hidden';
+  document.getElementById('turn-wrapper').style.visibility = 'hidden';
+  document.getElementById('score').style.visibility = 'hidden';
   document.getElementById('board').style.display = 'none';
-  start();
+  document.getElementById('chooseGame').style.display = 'block';
 }
 
 function start() {
   playerStartingGame = Math.floor((Math.random() * 2) + 1);
   if (playerStartingGame === 1) {
     document.getElementById('turn-value').innerHTML = 'Player 1';
+    currentPlayer = player1;
+    nextPlayer = player2;
+    currTurn = 1;
+    nextTurn = 2;
   } else {
     document.getElementById('turn-value').innerHTML = 'Player 2';
+    currentPlayer = player2;
+    nextPlayer = player1;
+    currTurn = 2;
+    nextTurn = 1;
   }
-  play(playerStartingGame);
+  document.getElementById('turn-wrapper').style.visibility = 'visible';
+  document.getElementById('score').style.visibility = 'visible';
+  document.getElementById('reset').style.visibility = 'visible';
+  play();
 }
 
 function nextGame() {
@@ -133,15 +214,15 @@ function nextGame() {
   if (playerStartingGame === 1) {
     document.getElementById('turn-value').innerHTML = 'Player 2';
     playerStartingGame = 2;
-    play(playerStartingGame);
+    start();
   } else {
     document.getElementById('turn-value').innerHTML = 'Player 1';
     playerStartingGame = 1;
-    play(playerStartingGame);
+    start();
   }
 }
 
-function endGame(status, currentPlayer) {
+function endGame() {
   availableBlocks.forEach((block) => {
     block.removeEventListener('click', () => {}, { once: true });
   });
@@ -163,47 +244,39 @@ function endGame(status, currentPlayer) {
   }, 3000);
 }
 
-function play(turn) {
-  let currTurn;
-  if (player1.played.length === 0 && player2.played.length === 0) {
-    currTurn = turn;
+function updateTurn() {
+  if (currTurn === 2) {
+    currentPlayer = player1;
+    nextPlayer = player2;
+    currTurn = 1;
+    nextTurn = 2;
+  } else {
+    currentPlayer = player2;
+    nextPlayer = player1;
+    currTurn = 2;
+    nextTurn = 1;
   }
-  let nextTurn;
-  let currentPlayer = {};
-  let nextPlayer = {};
-  availableBlocks.forEach((block) => {
-    block.addEventListener('click', () => {
-      if (currTurn === 1) {
-        currentPlayer = player1;
-        nextPlayer = player2;
-        nextTurn = 2;
-      } else {
-        currentPlayer = player2;
-        nextPlayer = player1;
-        nextTurn = 1;
-      }
-      updateVisual(block, currentPlayer, nextTurn);
-      updateData(Number(block.id), currentPlayer, nextPlayer);
-      console.log(`player1 || played: ${player1.played} || possibleWins ${player1.possibleWins.length}`);
-      console.log(`player2 || played: ${player2.played} || possibleWins ${player2.possibleWins.length}`);
-      let status = 'No winner yet';
-      if (currentPlayer.played.length >= 3) {
-        status = winCheck(currentPlayer);
-        if (status === 'winner') {
-          endGame(status, currentPlayer);
-        } else if (status !== 'winner' && player1.possibleWins.length === 0 && player2.possibleWins.length === 0) {
-          endGame(status, currentPlayer);
-        } else {
-          currTurn = nextTurn;
-        }
-      } else {
-        currTurn = nextTurn;
-      }
-    },
-    { once: true },
-    );
-  });
 }
+
+function sessionStatus() {
+  status = winCheck(currentPlayer);
+  if (status === 'winner') {
+    endGame();
+  } else if (status !== 'winner' && player1.possibleWins.length === 0 && player2.possibleWins.length === 0) {
+    endGame();
+  }
+}
+
+document.getElementById('vsComputer').addEventListener('click', () => {
+  gameType = 'vsComputer';
+  gameSetup();
+});
+
+document.getElementById('playerVsPlayer').addEventListener('click', () => {
+  gameType = 'playerVsPlayer';
+  gameSetup();
+});
+
 
 document.getElementById('O').addEventListener('click', () => {
   chooseOX('O');
@@ -218,3 +291,24 @@ document.getElementById('X').addEventListener('click', () => {
 document.getElementById('reset').addEventListener('click', () => {
   reset();
 });
+function play() {
+  if ((gameType === 'vsComputer' && currentPlayer === 'player 1') || (gameType === 'playerVsPlayer')) {
+    console.log('in if condition');
+    availableBlocks.forEach((block) => {
+      block.addEventListener('click', () => {
+        blockPlayed = Number(block.id);
+        updateVisual(blockPlayed);
+        updateData(blockPlayed);
+        if (currentPlayer.played.length >= 3) {
+          sessionStatus();
+        }
+        updateTurn();
+        if (gameType === 'vsComputer' && currentPlayer === 'player 2') {
+          computerPlaying();
+        }
+      },
+      { once: true },
+    );
+    });
+  }
+}

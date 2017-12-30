@@ -13,13 +13,13 @@
   <div id="menu">
     <div>
       <button id="reset" style="visibility:hidden">Reset</button> 
-      <div id="turn-wrapper" style="display:none">
+      <div id="turn-wrapper" style="visibility:hidden">
         <div class="col">Turn:</div>
         <div id="turn-value" class="col" >Player 1</div>
       </div>
     </div>
     <div>
-    <div>
+    <div id='score' style="visibility:hidden">
         <div class="col">Player 1 </div>
         <div id="player1-wins" class="col">0</div>
         <div class="col"> - </div> 
@@ -27,7 +27,12 @@
         <div class="col"> Player 2</div>
     </div>
   </div>
-  <div id="chooseColor" class ="overlay" style="display:block">
+  <div id="chooseGame" class ="overlay" style="display:block">
+    <p>How do you want to play:</p>
+    <button id="vsComputer">One player VS Computer</button>
+    <button id="playerVsPlayer">Player one VS Player two</button>
+  </div>
+  <div id="chooseColor" class ="overlay" style="display:none">
     <p>Would you like to be O or X:</p>
     <button id='O' class='buttonXO'><svg class="item O" viewBox="0 0 128 128" style="visibility: visible;"><path d="M64,16A48,48 0 1,0 64,112A48,48 0 1,0 64,16" style="stroke: rgb(242, 235, 211); stroke-dasharray: 301.635; stroke-dashoffset: 0;"></path></svg></button>
     <button id='X' class='buttonXO'><svg class="item X" viewBox="0 0 128 128" style="visibility: visible;"><path d="M16,16L112,112" style="stroke: rgb(84, 84, 84); stroke-dasharray: 135.764; stroke-dashoffset: 0;"></path><path d="M112,16L16,112" style="stroke: rgb(84, 84, 84); stroke-dasharray: 135.764; stroke-dashoffset: 0;"></path></svg></button>
