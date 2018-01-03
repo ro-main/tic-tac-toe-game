@@ -114,45 +114,100 @@ function updateData(blockId) {
   console.log(`player2 || played: ${player2.played} || possibleWins ${player2.possibleWins.length}`);
 }
 
-function computerPlaying() {
-  let choice;
+function aboutToWin(player) {
+  let result;
+  let winningCombination = [];
   let k;
-  // first check if player 1 is about to win
-  for (k = 0; k < player1.possibleWins.length; k += 1) {
-    const player1OrderedwinningCombination = [
-      {
-        combination: [1, 2, 3],
-        has: [1, 2],
-        needs: [3],
-      },
-    ];
+  for (k = 0; k < player.possibleWins.length; k += 1) {
+    winningCombination = [];
+
     let l;
     for (l = 0; l < player1.played.length; l += 1) {
-      const player1PossibleWin = player1.possibleWins[k];
-      const playerCurrMovePos = player1PossibleWin.indexOf(playerCurrMove);
+      const playerCurrPossibleWin = player1.possibleWins[k];
+      const playerCurrMove = player1.played[Number(l)];
+      const playerCurrMovePos = playerCurrPossibleWin.indexOf(playerCurrMove);
       if (playerCurrMovePos !== -1) {
-        player1OrderedwinningCombination.push(playerCurrMove);
+        winningCombination.push(playerCurrMove);
       }
 
-      if (winningCombination.length === 3) {
-        return 'winner';
+      if (winningCombination.length === 2) {
+        const remainingChoice = playerCurrPossibleWin.filter(!winningCombination.includes(this));
+        result = Number(remainingChoice);
       }
     }
   }
+  return result;
+}
 
+function rank(combination) {
+  const objectizedCombination = {
+    rank: 0,
+    combination: [],
+    numberOfMove: 0,
+    nextMoves: [],
+  };
+  /* assign rank:
+   - 1 if only one move to win
+   - 2 if 2 moves to win
+   - 3 if 3 moves to win
+  */
+  objectizedCombination= {
+    combination = combination,
+    rank = rankNb,
+    numberOfMove = numberOfMove,
+    nextMoves = nextMoves,
+  }
+  return objectizedCombination;
+}
 
-  // rank my possible wins based on number of
+function bestOption(player) {
+  let selectedOption;
+  const winningCombination = player.winCombinations;
+  const rankedWinningCombination = [];
+
+  winningCombination.forEach((e) => {
+    const combination = rank(e);
+    rankedWinningCombination.push(combination);
+  });
+    // rank my possible wins based on number of
   //
   // for each possible combination, check each value
     // if value hasn't been played, play it.
     // else go to next value
   // when ending, go to next
+  return selectedOption;
+}
+
+function computerPlaying() {
+  let choice;
+  // first if it's the first move of the game we play the optimal move (5)
+  if (player1.played.length < 1 && player2.played.length < 1) {
+    choice = 5;
+  } else {
+  // else we check if computer is about to win if not check if player 1 is about to win
+    let aboutToWinResult;
+    aboutToWinResult = aboutToWin(player2);
+    if (aboutToWinResult) {
+      choice = aboutToWinResult;
+    } else {
+      aboutToWinResult = aboutToWin(player1);
+      if (aboutToWinResult) {
+        choice = aboutToWinResult;
+      }
+    }
+  }
+
+  if (!choice) {
+    choice = bestOption(player2);
+  }
+
   updateVisual(choice);
   updateData(choice);
   if (currentPlayer.played.length >= 3) {
     sessionStatus();
   }
   updateTurn();
+  play();
 }
 
 function cleanCurrGame() {
@@ -310,5 +365,7 @@ function play() {
       { once: true },
     );
     });
+  } else {
+    computerPlaying();
   }
 }
