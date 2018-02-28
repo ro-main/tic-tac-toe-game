@@ -99,7 +99,6 @@ function updateVisual(blockId) {
   const currBlock = blockId;
   document.getElementById(currBlock).setAttribute('status', 'block');
   document.getElementById(currBlock).innerHTML = `${currentPlayer.XO}`;
-  document.getElementById('turn-value').innerHTML = `Player ${nextPlayer.number}`;
 }
 
 function updateData(blockId) {
@@ -336,6 +335,7 @@ function updateTurn() {
     currentPlayer = player2;
     nextPlayer = player1;
   }
+  document.getElementById('turn-value').innerHTML = `Player ${nextPlayer.number}`;
 }
 
 function sessionStatus() {
