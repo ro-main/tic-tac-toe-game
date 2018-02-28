@@ -23,8 +23,6 @@ const X = '<svg class="item X" viewBox="0 0 128 128"><path d="M16,16L112,112"></
 const availableBlocks = document.querySelectorAll('[status="available"]');
 
 let playerStartingGame;
-let currTurn;
-let nextTurn;
 let currentPlayer = {};
 let nextPlayer = {};
 let blockPlayed;
@@ -101,7 +99,7 @@ function updateVisual(blockId) {
   const currBlock = blockId;
   document.getElementById(currBlock).setAttribute('status', 'block');
   document.getElementById(currBlock).innerHTML = `${currentPlayer.XO}`;
-  document.getElementById('turn-value').innerHTML = `Player ${nextTurn}`;
+  document.getElementById('turn-value').innerHTML = `Player ${nextPlayer.number}`;
 }
 
 function updateData(blockId) {
@@ -122,9 +120,9 @@ function aboutToWin(player) {
     winningCombination = [];
 
     let l;
-    for (l = 0; l < player1.played.length; l += 1) {
-      const playerCurrPossibleWin = player1.possibleWins[k];
-      const playerCurrMove = player1.played[Number(l)];
+    for (l = 0; l < player.played.length; l += 1) {
+      const playerCurrPossibleWin = player.possibleWins[k];
+      const playerCurrMove = player.played[Number(l)];
       const playerCurrMovePos = playerCurrPossibleWin.indexOf(playerCurrMove);
       if (playerCurrMovePos !== -1) {
         winningCombination.push(playerCurrMove);
@@ -139,75 +137,105 @@ function aboutToWin(player) {
   return result;
 }
 
-function rank(combination) {
+function checkNextMovesToWin(combination) {
   const objectizedCombination = {
-    rank: 0,
-    combination: [],
-    numberOfMove: 0,
+    currentCombination: combination,
+    numberOfMoveToWin: 0,
     nextMoves: [],
   };
-  /* assign rank:
-   - 1 if only one move to win
-   - 2 if 2 moves to win
-   - 3 if 3 moves to win
-  */
-  objectizedCombination= {
-    combination = combination,
-    rank = rankNb,
-    numberOfMove = numberOfMove,
-    nextMoves = nextMoves,
-  }
+  // calculate the remaining number of moves to complete the current combination
+  combination.forEach((e) => {
+    if (!currentPlayer.played.includes(e)) {
+      objectizedCombination.numberOfMoveToWin += 1;
+      objectizedCombination.nextMoves.push(e);
+    }
+  });
+
   return objectizedCombination;
 }
 
-function bestOption(player) {
+function chooseBestOption(combinations) {
+  let bestCombinations = [combinations[0]];
   let selectedOption;
-  const winningCombination = player.winCombinations;
-  const rankedWinningCombination = [];
+  let i;
+  for (i = 1; i < combinations.length; i += 1) {
+    if (combinations[i].numberOfMoveToWin < bestCombinations[0].numberOfMoveToWin) {
+      bestCombinations = [combinations[i]];
+    } else if (combinations[i].numberOfMoveToWin === bestCombinations[0].numberOfMoveToWin) {
+      bestCombinations.push(combinations[i]);
+    }
+  }
+  if (bestCombinations.length === 1) {
+    selectedOption = bestCombinations[0].nextMoves[0];
+  } else {
+    const orderedBestMoves = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+      6: 0,
+      7: 0,
+      8: 0,
+      9: 0,
+    };
 
-  winningCombination.forEach((e) => {
-    const combination = rank(e);
-    rankedWinningCombination.push(combination);
-  });
-    // rank my possible wins based on number of
-  //
-  // for each possible combination, check each value
-    // if value hasn't been played, play it.
-    // else go to next value
-  // when ending, go to next
+    let j;
+    for (j = 0; j < bestCombinations.length; j += 1) {
+      let k;
+      const moves = bestCombinations[j].nextMoves;
+      for (k = 0; k < moves.length; k += 1) {
+        orderedBestMoves[moves[k]] += 1;
+      }
+    }
+
+    selectedOption = Object.keys(orderedBestMoves).reduce((a, b) =>
+       orderedBestMoves[a] > orderedBestMoves[b] ? a : b);
+  }
+
   return selectedOption;
 }
 
+function bestOption(player) {
+  const winningCombination = player.possibleWins;
+  const rankedWinningCombination = [];
+
+  winningCombination.forEach((e) => {
+    const combination = checkNextMovesToWin(e);
+    rankedWinningCombination.push(combination);
+  });
+
+  return chooseBestOption(rankedWinningCombination);
+}
+
 function computerPlaying() {
-  let choice;
+  let nextMove;
   // first if it's the first move of the game we play the optimal move (5)
   if (player1.played.length < 1 && player2.played.length < 1) {
-    choice = 5;
+    nextMove = 5;
   } else {
   // else we check if computer is about to win if not check if player 1 is about to win
-    let aboutToWinResult;
-    aboutToWinResult = aboutToWin(player2);
-    if (aboutToWinResult) {
-      choice = aboutToWinResult;
+
+    const isComputerAboutToWin = aboutToWin(player2);
+    if (isComputerAboutToWin) {
+      nextMove = isComputerAboutToWin;
     } else {
-      aboutToWinResult = aboutToWin(player1);
-      if (aboutToWinResult) {
-        choice = aboutToWinResult;
+      const isPlayer1AboutToWin = aboutToWin(player1);
+      if (isPlayer1AboutToWin) {
+        nextMove = isPlayer1AboutToWin;
+      } else {
+        nextMove = bestOption(player2);
       }
     }
   }
 
-  if (!choice) {
-    choice = bestOption(player2);
-  }
-
-  updateVisual(choice);
-  updateData(choice);
+  updateVisual(nextMove);
+  updateData(nextMove);
   if (currentPlayer.played.length >= 3) {
     sessionStatus();
   }
   updateTurn();
-  play();
+  humanPlaying();
 }
 
 function cleanCurrGame() {
@@ -249,19 +277,20 @@ function start() {
     document.getElementById('turn-value').innerHTML = 'Player 1';
     currentPlayer = player1;
     nextPlayer = player2;
-    currTurn = 1;
-    nextTurn = 2;
   } else {
     document.getElementById('turn-value').innerHTML = 'Player 2';
     currentPlayer = player2;
     nextPlayer = player1;
-    currTurn = 2;
-    nextTurn = 1;
   }
   document.getElementById('turn-wrapper').style.visibility = 'visible';
   document.getElementById('score').style.visibility = 'visible';
   document.getElementById('reset').style.visibility = 'visible';
-  play();
+
+  if (gameType === 'playerVsPlayer' || (gameType === 'vsComputer' && playerStartingGame === 1)) {
+    humanPlaying();
+  } else {
+    computerPlaying();
+  }
 }
 
 function nextGame() {
@@ -300,16 +329,12 @@ function endGame() {
 }
 
 function updateTurn() {
-  if (currTurn === 2) {
+  if (currentPlayer.number === 2) {
     currentPlayer = player1;
     nextPlayer = player2;
-    currTurn = 1;
-    nextTurn = 2;
   } else {
     currentPlayer = player2;
     nextPlayer = player1;
-    currTurn = 2;
-    nextTurn = 1;
   }
 }
 
@@ -346,26 +371,22 @@ document.getElementById('X').addEventListener('click', () => {
 document.getElementById('reset').addEventListener('click', () => {
   reset();
 });
-function play() {
-  if ((gameType === 'vsComputer' && currentPlayer === 'player 1') || (gameType === 'playerVsPlayer')) {
-    console.log('in if condition');
-    availableBlocks.forEach((block) => {
-      block.addEventListener('click', () => {
-        blockPlayed = Number(block.id);
-        updateVisual(blockPlayed);
-        updateData(blockPlayed);
-        if (currentPlayer.played.length >= 3) {
-          sessionStatus();
-        }
-        updateTurn();
-        if (gameType === 'vsComputer' && currentPlayer === 'player 2') {
-          computerPlaying();
-        }
-      },
-      { once: true },
+function humanPlaying() {
+  console.log('in if condition');
+  availableBlocks.forEach((block) => {
+    block.addEventListener('click', () => {
+      blockPlayed = Number(block.id);
+      updateVisual(blockPlayed);
+      updateData(blockPlayed);
+      if (currentPlayer.played.length >= 3) {
+        sessionStatus();
+      }
+      updateTurn();
+      if (gameType === 'vsComputer') {
+        computerPlaying();
+      }
+    },
+    { once: true },
     );
-    });
-  } else {
-    computerPlaying();
-  }
+  });
 }
