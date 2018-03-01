@@ -1,6 +1,7 @@
 /* eslint-env browser */
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 /* eslint no-use-before-define: ["error", { "functions": false }] */
+
 let gameType = '';
 
 let remainingMoves = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -20,7 +21,7 @@ const player2 = { number: 2, played: [], possibleWins: winCombinations, XO: '', 
 const O = '<svg class="item O" viewBox="0 0 128 128"><path d="M64,16A48,48 0 1,0 64,112A48,48 0 1,0 64,16"></path></svg>';
 const X = '<svg class="item X" viewBox="0 0 128 128"><path d="M16,16L112,112"></path><path d="M112,16L16,112"></path></svg>';
 
-const availableBlocks = document.querySelectorAll('[status="available"]');
+let availableBlocks = document.querySelectorAll('[status="available"]');
 
 let playerStartingGame;
 let currentPlayer = {};
@@ -99,6 +100,7 @@ function updateVisual(blockId) {
   const currBlock = blockId;
   document.getElementById(currBlock).setAttribute('status', 'block');
   document.getElementById(currBlock).innerHTML = `${currentPlayer.XO}`;
+  availableBlocks = document.querySelectorAll('[status="available"]');
 }
 
 function updateData(blockId) {
@@ -128,12 +130,17 @@ function aboutToWin(player) {
       }
 
       if (winningCombination.length === 2) {
-        const remainingChoice = playerCurrPossibleWin.filter(!winningCombination.includes(this));
-        result = Number(remainingChoice);
+        let m;
+        for (m = 0; m < playerCurrPossibleWin.length; m += 1) {
+          const isInWinningCombination = winningCombination.includes(playerCurrPossibleWin[m]);
+          if (!isInWinningCombination) {
+            return Number(playerCurrPossibleWin[m]);
+          }
+        }
       }
     }
   }
-  return result;
+  return Number(result);
 }
 
 function checkNextMovesToWin(combination) {
@@ -204,7 +211,20 @@ function bestOption(player) {
     rankedWinningCombination.push(combination);
   });
 
-  return chooseBestOption(rankedWinningCombination);
+  return Number(chooseBestOption(rankedWinningCombination));
+}
+
+function humanPlaying(val) {
+  blockPlayed = val;
+  updateVisual(blockPlayed);
+  updateData(blockPlayed);
+  if (currentPlayer.played.length >= 3) {
+    sessionStatus();
+  }
+  updateTurn();
+  if (gameType === 'vsComputer') {
+    computerPlaying();
+  }
 }
 
 function computerPlaying() {
@@ -234,7 +254,6 @@ function computerPlaying() {
     sessionStatus();
   }
   updateTurn();
-  humanPlaying();
 }
 
 function cleanCurrGame() {
@@ -285,9 +304,7 @@ function start() {
   document.getElementById('score').style.visibility = 'visible';
   document.getElementById('reset').style.visibility = 'visible';
 
-  if (gameType === 'playerVsPlayer' || (gameType === 'vsComputer' && playerStartingGame === 1)) {
-    humanPlaying();
-  } else {
+  if (gameType === 'vsComputer' && playerStartingGame === 2) {
     computerPlaying();
   }
 }
@@ -335,7 +352,7 @@ function updateTurn() {
     currentPlayer = player2;
     nextPlayer = player1;
   }
-  document.getElementById('turn-value').innerHTML = `Player ${nextPlayer.number}`;
+  document.getElementById('turn-value').innerHTML = `Player ${currentPlayer.number}`;
 }
 
 function sessionStatus() {
@@ -371,22 +388,11 @@ document.getElementById('X').addEventListener('click', () => {
 document.getElementById('reset').addEventListener('click', () => {
   reset();
 });
-function humanPlaying() {
-  console.log('in if condition');
-  availableBlocks.forEach((block) => {
-    block.addEventListener('click', () => {
-      blockPlayed = Number(block.id);
-      updateVisual(blockPlayed);
-      updateData(blockPlayed);
-      if (currentPlayer.played.length >= 3) {
-        sessionStatus();
-      }
-      updateTurn();
-      if (gameType === 'vsComputer') {
-        computerPlaying();
-      }
-    },
-    { once: true },
-    );
-  });
-}
+
+availableBlocks.forEach((block) => {
+  block.addEventListener('click', () => {
+    humanPlaying(Number(block.id));
+  },
+  { once: true },
+  );
+});
