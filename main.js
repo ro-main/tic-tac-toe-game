@@ -61,11 +61,11 @@ function updateRemainingMoves(currentBlockId) {
   return newRemainingMoves;
 }
 
-function updateOtherPlayerPossibleWins(OtherPlayer, lastMove) {
+function updateOtherPlayerPossibleWins(lastMove) {
   const currMove = Number(lastMove);
   const newPossibleWins = [];
 
-  OtherPlayer.possibleWins.forEach((e) => {
+  nextPlayer.possibleWins.forEach((e) => {
     if (!e.includes(currMove)) {
       newPossibleWins.push(e);
     }
@@ -74,15 +74,14 @@ function updateOtherPlayerPossibleWins(OtherPlayer, lastMove) {
 }
 
 function winCheck() {
-  const joueur = currentPlayer;
   let k;
   let winningCombination = [];
-  for (k = 0; k < joueur.possibleWins.length; k += 1) {
+  for (k = 0; k < currentPlayer.possibleWins.length; k += 1) {
     winningCombination = [];
     let l;
-    for (l = 0; l < joueur.played.length; l += 1) {
-      const playerCurrPossibleWin = joueur.possibleWins[k];
-      const playerCurrMove = joueur.played[Number(l)];
+    for (l = 0; l < currentPlayer.played.length; l += 1) {
+      const playerCurrPossibleWin = currentPlayer.possibleWins[k];
+      const playerCurrMove = currentPlayer.played[Number(l)];
       const playerCurrMovePos = playerCurrPossibleWin.indexOf(playerCurrMove);
       if (playerCurrMovePos !== -1) {
         winningCombination.push(playerCurrMove);
@@ -104,13 +103,9 @@ function updateVisual(blockId) {
 }
 
 function updateData(blockId) {
-  const nextPlayerz = nextPlayer;
-  const currentPlayerz = currentPlayer;
-  currentPlayerz.played.push(blockId);
-  nextPlayerz.possibleWins = updateOtherPlayerPossibleWins(nextPlayerz, blockId);
+  currentPlayer.played.push(blockId);
+  nextPlayer.possibleWins = updateOtherPlayerPossibleWins(blockId);
   remainingMoves = updateRemainingMoves(blockId);
-  console.log(`player1 || played: ${player1.played} || possibleWins ${player1.possibleWins.length}`);
-  console.log(`player2 || played: ${player2.played} || possibleWins ${player2.possibleWins.length}`);
 }
 
 function aboutToWin(player) {
@@ -144,7 +139,7 @@ function aboutToWin(player) {
 }
 
 function checkNextMovesToWin(combination) {
-  const objectizedCombination = {
+  const combinationObject = {
     currentCombination: combination,
     numberOfMoveToWin: 0,
     nextMoves: [],
@@ -152,12 +147,12 @@ function checkNextMovesToWin(combination) {
   // calculate the remaining number of moves to complete the current combination
   combination.forEach((e) => {
     if (!currentPlayer.played.includes(e)) {
-      objectizedCombination.numberOfMoveToWin += 1;
-      objectizedCombination.nextMoves.push(e);
+      combinationObject.numberOfMoveToWin += 1;
+      combinationObject.nextMoves.push(e);
     }
   });
 
-  return objectizedCombination;
+  return combinationObject;
 }
 
 function chooseBestOption(combinations) {
@@ -219,41 +214,62 @@ function humanPlaying(val) {
   updateVisual(blockPlayed);
   updateData(blockPlayed);
   if (currentPlayer.played.length >= 3) {
-    sessionStatus();
-  }
-  updateTurn();
-  if (gameType === 'vsComputer') {
-    computerPlaying();
+    status = winCheck(currentPlayer);
+    if (status === 'winner') {
+      endGame();
+    } else if (status !== 'winner' && player1.possibleWins.length === 0 && player2.possibleWins.length === 0) {
+      endGame();
+    } else {
+      updateTurn();
+      if (gameType === 'vsComputer') {
+        computerPlaying();
+      }
+    }
+  } else {
+    updateTurn();
+    if (gameType === 'vsComputer') {
+      computerPlaying();
+    }
   }
 }
 
 function computerPlaying() {
-  let nextMove;
-  // first if it's the first move of the game we play the optimal move (5)
-  if (player1.played.length < 1 && player2.played.length < 1) {
-    nextMove = 5;
-  } else {
-  // else we check if computer is about to win if not check if player 1 is about to win
-
-    const isComputerAboutToWin = aboutToWin(player2);
-    if (isComputerAboutToWin) {
-      nextMove = isComputerAboutToWin;
+  setTimeout(() => {
+    let nextMove;
+    // first if it's the first move of the game we play the optimal move (5)
+    if (player1.played.length < 1 && player2.played.length < 1) {
+      nextMove = 5;
     } else {
-      const isPlayer1AboutToWin = aboutToWin(player1);
-      if (isPlayer1AboutToWin) {
-        nextMove = isPlayer1AboutToWin;
+    // else we check if computer is about to win if not check if player 1 is about to win
+
+      const isComputerAboutToWin = aboutToWin(player2);
+      if (isComputerAboutToWin) {
+        nextMove = isComputerAboutToWin;
       } else {
-        nextMove = bestOption(player2);
+        const isPlayer1AboutToWin = aboutToWin(player1);
+        if (isPlayer1AboutToWin) {
+          nextMove = isPlayer1AboutToWin;
+        } else {
+          nextMove = bestOption(player2);
+        }
       }
     }
-  }
 
-  updateVisual(nextMove);
-  updateData(nextMove);
-  if (currentPlayer.played.length >= 3) {
-    sessionStatus();
-  }
-  updateTurn();
+    updateVisual(nextMove);
+    updateData(nextMove);
+    if (currentPlayer.played.length >= 3) {
+      status = winCheck(currentPlayer);
+      if (status === 'winner') {
+        endGame();
+      } else if (status !== 'winner' && player1.possibleWins.length === 0 && player2.possibleWins.length === 0) {
+        endGame();
+      } else {
+        updateTurn();
+      }
+    } else {
+      updateTurn();
+    }
+  }, 1000);
 }
 
 function cleanCurrGame() {
@@ -323,13 +339,13 @@ function nextGame() {
 }
 
 function endGame() {
-  availableBlocks.forEach((block) => {
+  /* availableBlocks.forEach((block) => {
     block.removeEventListener('click', () => {}, { once: true });
-  });
-  const currPlayer = currentPlayer;
+  }); */
+
   if (status === 'winner') {
     document.getElementById('end').innerHTML = `Player ${currentPlayer.number} wins!`;
-    currPlayer.wins += 1;
+    currentPlayer.wins += 1;
     document.getElementById(`player${currentPlayer.number}-wins`).innerHTML = currentPlayer.wins;
     document.getElementById('end').style.display = 'block';
     document.getElementById('end').className = 'winner';
@@ -353,15 +369,6 @@ function updateTurn() {
     nextPlayer = player1;
   }
   document.getElementById('turn-value').innerHTML = `Player ${currentPlayer.number}`;
-}
-
-function sessionStatus() {
-  status = winCheck(currentPlayer);
-  if (status === 'winner') {
-    endGame();
-  } else if (status !== 'winner' && player1.possibleWins.length === 0 && player2.possibleWins.length === 0) {
-    endGame();
-  }
 }
 
 document.getElementById('vsComputer').addEventListener('click', () => {
