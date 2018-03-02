@@ -2,6 +2,8 @@
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 /* eslint no-use-before-define: ["error", { "functions": false }] */
 
+let partyNb = 0;
+let elementWithoutAddEventListener = [];
 let gameType = '';
 
 let remainingMoves = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -106,6 +108,9 @@ function updateData(blockId) {
   currentPlayer.played.push(blockId);
   nextPlayer.possibleWins = updateOtherPlayerPossibleWins(blockId);
   remainingMoves = updateRemainingMoves(blockId);
+  if ((gameType === 'vsComputer' && currentPlayer.number === 1) || (gameType === 'playerVSPlayer')) {
+    elementWithoutAddEventListener.push(document.getElementById(blockId));
+  }
 }
 
 function aboutToWin(player) {
@@ -279,6 +284,7 @@ function cleanCurrGame() {
     currBlock.innerHTML = '';
     currBlock.setAttribute('status', 'available');
   });
+  availableBlocks = document.querySelectorAll('[status="available"]');
   player1.possibleWins = winCombinations;
   player2.possibleWins = winCombinations;
   player1.played = [];
@@ -306,6 +312,7 @@ function reset() {
 }
 
 function start() {
+  partyNb += 1;
   playerStartingGame = Math.floor((Math.random() * 2) + 1);
   if (playerStartingGame === 1) {
     document.getElementById('turn-value').innerHTML = 'Player 1';
@@ -323,6 +330,25 @@ function start() {
   if (gameType === 'vsComputer' && playerStartingGame === 2) {
     computerPlaying();
   }
+
+  if (partyNb === 1) {
+    availableBlocks.forEach((block) => {
+      block.addEventListener('click', () => {
+        humanPlaying(Number(block.id));
+      },
+      { once: true },
+      );
+    });
+  } else {
+    elementWithoutAddEventListener.forEach((block) => {
+      block.addEventListener('click', () => {
+        humanPlaying(Number(block.id));
+      },
+      { once: true },
+      );
+      elementWithoutAddEventListener = [];
+    });
+  }
 }
 
 function nextGame() {
@@ -339,20 +365,16 @@ function nextGame() {
 }
 
 function endGame() {
-  /* availableBlocks.forEach((block) => {
-    block.removeEventListener('click', () => {}, { once: true });
-  }); */
-
   if (status === 'winner') {
     document.getElementById('end').innerHTML = `Player ${currentPlayer.number} wins!`;
     currentPlayer.wins += 1;
     document.getElementById(`player${currentPlayer.number}-wins`).innerHTML = currentPlayer.wins;
     document.getElementById('end').style.display = 'block';
-    document.getElementById('end').className = 'winner';
+    document.getElementById('end').className = 'overlay winner';
   } else {
     document.getElementById('end').innerHTML = 'It\'s a draw!';
     document.getElementById('end').style.display = 'block';
-    document.getElementById('end').className = 'draw';
+    document.getElementById('end').className = 'overlay draw';
   }
   document.getElementById('board').style.display = 'none';
   setTimeout(() => {
@@ -394,12 +416,4 @@ document.getElementById('X').addEventListener('click', () => {
 
 document.getElementById('reset').addEventListener('click', () => {
   reset();
-});
-
-availableBlocks.forEach((block) => {
-  block.addEventListener('click', () => {
-    humanPlaying(Number(block.id));
-  },
-  { once: true },
-  );
 });
