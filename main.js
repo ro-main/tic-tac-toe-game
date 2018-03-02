@@ -3,6 +3,8 @@
 /* eslint no-use-before-define: ["error", { "functions": false }] */
 
 let gameType = '';
+const vsComputer = 'vsComputer';
+const humanVsHuman = 'humanVsHuman';
 
 let movesPlayed = [];
 const winCombinations = [
@@ -26,6 +28,20 @@ let currentPlayer = {};
 let nextPlayer = {};
 let blockPlayed;
 let status = 'No winner yet';
+
+function currentPlayerIsHuman() {
+  if ((gameType === vsComputer && currentPlayer === 1) || (gameType === humanVsHuman)) {
+    return true;
+  }
+  return false;
+}
+
+function currentPlayerIsComputer() {
+  if (gameType === vsComputer && currentPlayer === 2) {
+    return true;
+  }
+  return false;
+}
 
 function chooseOX(selected) {
   if (selected === 'O') {
@@ -203,13 +219,13 @@ function humanPlaying(val) {
       endGame();
     } else {
       updateTurn();
-      if (gameType === 'vsComputer') {
+      if (gameType === vsComputer) {
         computerPlaying();
       }
     }
   } else {
     updateTurn();
-    if (gameType === 'vsComputer') {
+    if (gameType === vsComputer) {
       computerPlaying();
     }
   }
@@ -302,14 +318,14 @@ function start() {
   document.getElementById('score').style.visibility = 'visible';
   document.getElementById('reset').style.visibility = 'visible';
 
-  if (gameType === 'vsComputer' && playerStartingGame === 2) {
+  if (currentPlayerIsComputer) {
     computerPlaying();
   }
 
   document.getElementById('board').addEventListener('click', (e) => {
     const blockId = Number(e.target.id);
     const blockUnavailable = movesPlayed.includes(blockId);
-    if (!blockUnavailable && e.target.id !== '') {
+    if (!blockUnavailable && e.target.id !== '' && currentPlayerIsHuman()) {
       humanPlaying(blockId);
     }
   });
@@ -357,8 +373,8 @@ function updateTurn() {
   document.getElementById('turn-value').innerHTML = `Player ${currentPlayer.number}`;
 }
 
-document.getElementById('vsComputer').addEventListener('click', () => {
-  gameType = 'vsComputer';
+document.getElementById(vsComputer).addEventListener('click', () => {
+  gameType = vsComputer;
   gameSetup();
 });
 
