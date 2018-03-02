@@ -30,14 +30,14 @@ let blockPlayed;
 let status = 'No winner yet';
 
 function currentPlayerIsHuman() {
-  if ((gameType === vsComputer && currentPlayer === 1) || (gameType === humanVsHuman)) {
+  if ((gameType === vsComputer && currentPlayer.number === 1) || (gameType === humanVsHuman)) {
     return true;
   }
   return false;
 }
 
 function currentPlayerIsComputer() {
-  if (gameType === vsComputer && currentPlayer === 2) {
+  if (gameType === vsComputer && currentPlayer.number === 2) {
     return true;
   }
   return false;
@@ -97,9 +97,7 @@ function winCheck() {
 }
 
 function updateVisual(blockId) {
-  const currBlock = blockId;
-  document.getElementById(currBlock).setAttribute('data-status', 'block');
-  document.getElementById(currBlock).innerHTML = `${currentPlayer.XO}`;
+  document.getElementById(blockId).innerHTML = `${currentPlayer.XO}`;
 }
 
 function updateData(blockId) {
@@ -318,7 +316,7 @@ function start() {
   document.getElementById('score').style.visibility = 'visible';
   document.getElementById('reset').style.visibility = 'visible';
 
-  if (currentPlayerIsComputer) {
+  if (currentPlayerIsComputer()) {
     computerPlaying();
   }
 
