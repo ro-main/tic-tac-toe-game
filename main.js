@@ -2,11 +2,9 @@
 /* eslint no-console: ["error", { allow: ["warn", "error", "log"] }] */
 /* eslint no-use-before-define: ["error", { "functions": false }] */
 
-let partyNb = 0;
-let elementWithoutAddEventListener = [];
 let gameType = '';
 
-let remainingMoves = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+let movesPlayed = [];
 const winCombinations = [
   [1, 2, 3],
   [4, 5, 6],
@@ -22,8 +20,6 @@ const player2 = { number: 2, played: [], possibleWins: winCombinations, XO: '', 
 
 const O = '<svg class="item O" viewBox="0 0 128 128"><path d="M64,16A48,48 0 1,0 64,112A48,48 0 1,0 64,16"></path></svg>';
 const X = '<svg class="item X" viewBox="0 0 128 128"><path d="M16,16L112,112"></path><path d="M112,16L16,112"></path></svg>';
-
-let availableBlocks = document.querySelectorAll('[status="available"]');
 
 let playerStartingGame;
 let currentPlayer = {};
@@ -50,17 +46,6 @@ function chooseOX(selected) {
 function gameSetup() {
   document.getElementById('chooseGame').style.display = 'none';
   document.getElementById('chooseColor').style.display = 'block';
-}
-
-function updateRemainingMoves(currentBlockId) {
-  const newRemainingMoves = [];
-  let i;
-  for (i = 0; i < remainingMoves.length; i += 1) {
-    if (!remainingMoves[i] === currentBlockId) {
-      newRemainingMoves.push(currentBlockId);
-    }
-  }
-  return newRemainingMoves;
 }
 
 function updateOtherPlayerPossibleWins(lastMove) {
@@ -99,18 +84,14 @@ function winCheck() {
 
 function updateVisual(blockId) {
   const currBlock = blockId;
-  document.getElementById(currBlock).setAttribute('status', 'block');
+  document.getElementById(currBlock).setAttribute('data-status', 'block');
   document.getElementById(currBlock).innerHTML = `${currentPlayer.XO}`;
-  availableBlocks = document.querySelectorAll('[status="available"]');
 }
 
 function updateData(blockId) {
   currentPlayer.played.push(blockId);
   nextPlayer.possibleWins = updateOtherPlayerPossibleWins(blockId);
-  remainingMoves = updateRemainingMoves(blockId);
-  if ((gameType === 'vsComputer' && currentPlayer.number === 1) || (gameType === 'playerVSPlayer')) {
-    elementWithoutAddEventListener.push(document.getElementById(blockId));
-  }
+  movesPlayed.push(blockId);
 }
 
 function aboutToWin(player) {
@@ -186,11 +167,9 @@ function chooseBestOption(combinations) {
       9: 0,
     };
 
-    let j;
-    for (j = 0; j < bestCombinations.length; j += 1) {
-      let k;
+    for (let j = 0; j < bestCombinations.length; j += 1) {
       const moves = bestCombinations[j].nextMoves;
-      for (k = 0; k < moves.length; k += 1) {
+      for (let k = 0; k < moves.length; k += 1) {
         orderedBestMoves[moves[k]] += 1;
       }
     }
@@ -278,13 +257,12 @@ function computerPlaying() {
 }
 
 function cleanCurrGame() {
-  const playedBlocks = document.querySelectorAll('[status="block"]');
-  playedBlocks.forEach((block) => {
+  movesPlayed = [];
+  const blocks = Array.from(document.getElementsByClassName('block'));
+  blocks.forEach((block) => {
     const currBlock = block;
     currBlock.innerHTML = '';
-    currBlock.setAttribute('status', 'available');
   });
-  availableBlocks = document.querySelectorAll('[status="available"]');
   player1.possibleWins = winCombinations;
   player2.possibleWins = winCombinations;
   player1.played = [];
@@ -312,7 +290,6 @@ function reset() {
 }
 
 function start() {
-  partyNb += 1;
   playerStartingGame = Math.floor((Math.random() * 2) + 1);
   if (playerStartingGame === 1) {
     document.getElementById('turn-value').innerHTML = 'Player 1';
@@ -331,24 +308,13 @@ function start() {
     computerPlaying();
   }
 
-  if (partyNb === 1) {
-    availableBlocks.forEach((block) => {
-      block.addEventListener('click', () => {
-        humanPlaying(Number(block.id));
-      },
-      { once: true },
-      );
-    });
-  } else {
-    elementWithoutAddEventListener.forEach((block) => {
-      block.addEventListener('click', () => {
-        humanPlaying(Number(block.id));
-      },
-      { once: true },
-      );
-      elementWithoutAddEventListener = [];
-    });
-  }
+  document.getElementById('board').addEventListener('click', (e) => {
+    const blockId = Number(e.target.id);
+    const blockUnavailable = movesPlayed.includes(blockId);
+    if (!blockUnavailable && e.target.id !== '') {
+      humanPlaying(blockId);
+    }
+  });
 }
 
 function nextGame() {
