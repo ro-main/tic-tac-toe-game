@@ -144,8 +144,7 @@ function checkNextMovesToWin(combination) {
 function chooseBestOption(combinations) {
   let bestCombinations = [combinations[0]];
   let selectedOption;
-  let i;
-  for (i = 1; i < combinations.length; i += 1) {
+  for (let i = 1; i < combinations.length; i += 1) {
     if (combinations[i].numberOfMoveToWin < bestCombinations[0].numberOfMoveToWin) {
       bestCombinations = [combinations[i]];
     } else if (combinations[i].numberOfMoveToWin === bestCombinations[0].numberOfMoveToWin) {
@@ -174,8 +173,12 @@ function chooseBestOption(combinations) {
       }
     }
 
-    selectedOption = Object.keys(orderedBestMoves).reduce((a, b) =>
-       orderedBestMoves[a] > orderedBestMoves[b] ? a : b);
+    selectedOption = Object.keys(orderedBestMoves).reduce((a, b) => {
+      if (orderedBestMoves[a] > orderedBestMoves[b]) {
+        return a;
+      }
+      return b;
+    });
   }
 
   return selectedOption;
