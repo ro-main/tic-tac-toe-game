@@ -61,12 +61,10 @@ function updateOtherPlayerPossibleWins(lastMove) {
 }
 
 function winCheck() {
-  let k;
   let winningCombination = [];
-  for (k = 0; k < currentPlayer.possibleWins.length; k += 1) {
+  for (let k = 0; k < currentPlayer.possibleWins.length; k += 1) {
     winningCombination = [];
-    let l;
-    for (l = 0; l < currentPlayer.played.length; l += 1) {
+    for (let l = 0; l < currentPlayer.played.length; l += 1) {
       const playerCurrPossibleWin = currentPlayer.possibleWins[k];
       const playerCurrMove = currentPlayer.played[Number(l)];
       const playerCurrMovePos = playerCurrPossibleWin.indexOf(playerCurrMove);
@@ -97,12 +95,10 @@ function updateData(blockId) {
 function aboutToWin(player) {
   let result;
   let winningCombination = [];
-  let k;
-  for (k = 0; k < player.possibleWins.length; k += 1) {
+  for (let k = 0; k < player.possibleWins.length; k += 1) {
     winningCombination = [];
 
-    let l;
-    for (l = 0; l < player.played.length; l += 1) {
+    for (let l = 0; l < player.played.length; l += 1) {
       const playerCurrPossibleWin = player.possibleWins[k];
       const playerCurrMove = player.played[Number(l)];
       const playerCurrMovePos = playerCurrPossibleWin.indexOf(playerCurrMove);
@@ -111,8 +107,7 @@ function aboutToWin(player) {
       }
 
       if (winningCombination.length === 2) {
-        let m;
-        for (m = 0; m < playerCurrPossibleWin.length; m += 1) {
+        for (let m = 0; m < playerCurrPossibleWin.length; m += 1) {
           const isInWinningCombination = winningCombination.includes(playerCurrPossibleWin[m]);
           if (!isInWinningCombination) {
             return Number(playerCurrPossibleWin[m]);
